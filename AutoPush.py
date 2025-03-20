@@ -33,7 +33,7 @@ def execute_command(command, cwd=None):
         logging.error(f"Error: Git no encontrado. Asegúrate de que Git esté instalado y en el PATH.")
         return False
 
-def create_github_repo(repo_name, github_user, github_token):
+def create_github_repo(repo_name, github_user, github_token, private=False):
     """Crea un repositorio en GitHub usando la API."""
     try:
         url = f"https://api.github.com/user/repos"
@@ -41,7 +41,7 @@ def create_github_repo(repo_name, github_user, github_token):
             "Authorization": f"token {github_token}",
             "Accept": "application/vnd.github.v3+json"
         }
-        data = {"name": repo_name, "private": False, "auto_init": True}
+        data = {"name": repo_name, "private": private, "auto_init": True}
 
         import requests
         response = requests.post(url, headers=headers, json=data)
@@ -62,6 +62,7 @@ def sync_project(config, github_user, github_token):
     folder_path = config['folder_path']
     repo_name = config['repo_name']
     interval = config['interval']
+    private = config.get('private', False)
 
     logging.info(f"Sincronizando proyecto: {repo_name} en {folder_path}")
 
@@ -87,10 +88,9 @@ def sync_project(config, github_user, github_token):
         subprocess.check_output(['git', 'ls-remote', remote_url], cwd=folder_path)
     except subprocess.CalledProcessError:  # Repository does not exist
         logging.info(f"El repositorio remoto {remote_url} no existe. Creando...")
-        if not create_github_repo(repo_name, github_user, github_token):
+        if not create_github_repo(repo_name, github_user, github_token, private):
             logging.error(f"Error al crear el repositorio en GitHub para {repo_name}")
             return
-
 
     # Agregar el remoto si no existe
     try:
