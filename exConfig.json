@@ -1,0 +1,11 @@
+{
+    "github_user": "",
+    "github_token": "",
+    "projects": [
+      {
+        "folder_path": "/folder/path",
+        "repo_name": "repo_name",
+        "interval": 120
+      }
+    ]
+  }
