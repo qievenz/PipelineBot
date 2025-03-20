@@ -105,12 +105,6 @@ def sync_project(config, github_user, github_token):
     def commit_and_push():
         """Realiza el commit y push."""
         try:
-            # Hacer pull
-            if not execute_command(["git", "pull", "origin", "main"], cwd=folder_path):
-                logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
-                return
-            logging.info(f"Cambios bajados del repositorio {repo_name}")
-                
             # Añadir todos los cambios
             if not execute_command(["git", "add", "."], cwd=folder_path):
                 logging.error(f"Error al ejecutar 'git add .' en {folder_path}")
@@ -123,7 +117,13 @@ def sync_project(config, github_user, github_token):
                 # Hacer commit solo si hay cambios
                 if not execute_command(["git", "commit", "-m", "Auto commit"], cwd=folder_path):
                     logging.error(f"Error al ejecutar 'git commit' en {folder_path}")
-                    return                
+                    return
+                
+                # Hacer pull
+                if not execute_command(["git", "pull", "origin", "main"], cwd=folder_path):
+                    logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
+                    return
+                logging.info(f"Cambios bajados del repositorio {repo_name}")
 
                 # Hacer push
                 if not execute_command(["git", "push", "origin", "main"], cwd=folder_path):
@@ -195,6 +195,3 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, signal_handler) # kill (en Linux)
 
     main()
-    
-# pip install pyinstaller
-# pyinstaller --onefile tu_script.py
