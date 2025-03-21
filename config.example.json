@@ -1,6 +1,7 @@
 {
     "github_user": "",
     "github_token": "",
+    "google_api_key": "",
     "projects": [
       {
         "folder_path": "/folder/path",
