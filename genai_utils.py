@@ -1,4 +1,5 @@
 import google.generativeai as genai
+import logging
 
 MODEL_NAME = 'gemini-1.5-flash'  # O 'gemini-1.5-pro'
 
@@ -55,6 +56,6 @@ def generate_commit_message(diff, model_name=MODEL_NAME):
 
         return commit_message
     except Exception as e:
-        print(f"Error al generar el mensaje de commit: {e}")
+        logging.error(f"Error al generar el mensaje de commit: {e}")
         return None
 

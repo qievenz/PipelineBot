@@ -74,9 +74,9 @@ def sync_project(config):
                 commit_message = genai_utils.generate_commit_message(diff)
 
                 if commit_message:
-                    print(f"Mensaje de commit sugerido: {commit_message}")
+                    logging.info(f"Mensaje de commit sugerido: {commit_message}")
                 else:
-                    print("No se pudo generar un mensaje de commit.")
+                    logging.warning("No se pudo generar un mensaje de commit.")
                     commit_message = "Auto commit"
 
                 if not git_utils.git_commit(folder_path, commit_message):
@@ -152,27 +152,6 @@ def check_config_changes():
 
 def main():
     """Función principal del programa."""
-    # global running, config, config_last_modified
-
-    # config = load_config(config_file) #Pasar el nombre del archivo a la función
-    # if not config:
-    #     print("Error al cargar la configuración.  Revisa el log para más detalles.")
-    #     return
-    
-    # git_utils.configure(config.get('github_user'), config.get('github_token'))
-    # genai_utils.configure(config.get('google_api_key'))
-
-    # try:
-    #     config_last_modified = os.path.getmtime(config_file)
-    # except FileNotFoundError:
-    #     logging.error(f"Archivo de configuración no encontrado: {config_file}")
-    #     config_last_modified = None
-
-    # projects = config.get('projects', [])
-
-    # for project_config in projects:
-    #     sync_project(project_config)
-    
     check_config_changes()
 
     schedule.every(1).minute.do(check_config_changes)

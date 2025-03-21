@@ -6,7 +6,8 @@
       {
         "folder_path": "/folder/path",
         "repo_name": "repo_name",
-        "interval": 120
+        "interval": 120,
+        "private": false
       }
     ]
   }
