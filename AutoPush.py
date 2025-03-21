@@ -14,8 +14,10 @@ import genai_utils
 logging.basicConfig(filename='log.txt', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Variable global para indicar si el programa debe detenerse
 running = True
+config_file = 'config.json'
+config_last_modified = None 
+jobs = []
 
 def sync_project(config):
     """Sincroniza una carpeta con un repositorio en GitHub."""
@@ -37,16 +39,16 @@ def sync_project(config):
             return
 
     remote_url = git_utils.get_remote_url(repo_name)
-    
+
     if not remote_url:
         logging.error("No se pudo obtener la URL remota.")
         return
-    
+
     try:
         subprocess.check_output(['git', 'ls-remote', remote_url], cwd=folder_path)
     except subprocess.CalledProcessError:  # Repository does not exist
         logging.info(f"El repositorio remoto {remote_url} no existe. Creando...")
-        if not git_utils.create_github_repo(repo_name, github_user, github_token, private):
+        if not git_utils.create_github_repo(repo_name, private):
             logging.error(f"Error al crear el repositorio en GitHub para {repo_name}")
             return
 
@@ -70,17 +72,17 @@ def sync_project(config):
             diff = git_utils.get_git_diff(cwd=folder_path)
             if diff:
                 commit_message = genai_utils.generate_commit_message(diff)
-                
+
                 if commit_message:
                     print(f"Mensaje de commit sugerido: {commit_message}")
                 else:
                     print("No se pudo generar un mensaje de commit.")
                     commit_message = "Auto commit"
-                
+
                 if not git_utils.git_commit(folder_path, commit_message):
                     logging.error(f"Error al ejecutar 'git commit' en {folder_path}")
                     return
-                
+
                 if not git_utils.git_pull(cwd=folder_path):
                     logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
                     return
@@ -96,8 +98,9 @@ def sync_project(config):
         except Exception as e:
             logging.error(f"Error durante el commit y push en {repo_name}: {e}")
 
-    schedule.every(interval).minutes.do(commit_and_push)
-
+    job = schedule.every(interval).minutes.do(commit_and_push)
+    jobs.append(job)
+    logging.info(f"Tarea programada para {repo_name} cada {interval} minutos.")
 
 def load_config(config_file='config.json'):
     """Carga la configuración desde el archivo JSON."""
@@ -112,33 +115,78 @@ def load_config(config_file='config.json'):
         logging.error(f"Error al decodificar el archivo JSON: {config_file}")
         return None
 
+def check_config_changes():
+    """Verifica si el archivo de configuración ha cambiado."""
+    global config_last_modified, config
+    try:
+        current_last_modified = os.path.getmtime(config_file)
+        
+        if config_last_modified is None or current_last_modified > config_last_modified:
+            logging.info("Se detectaron cambios en el archivo de configuración. Recargando...")
+            config_last_modified = current_last_modified
+
+            for job in jobs:
+                schedule.cancel_job(job)
+            jobs.clear() 
+
+            config = load_config()
+            if not config:
+                logging.error("Error al recargar la configuración.  Usando la configuración anterior.")
+                return 
+
+            #Reconfigurar las credenciales
+            git_utils.configure(config.get('github_user'), config.get('github_token'))
+            genai_utils.configure(config.get('google_api_key'))
+
+            # Volver a programar las tareas
+            projects = config.get('projects', [])
+            for project_config in projects:
+                sync_project(project_config)
+            logging.info("Configuración recargada y tareas reprogramadas.")
+        else:
+            pass 
+    except FileNotFoundError:
+        logging.error(f"Archivo de configuración no encontrado: {config_file}")
+    except Exception as e:
+        logging.error(f"Error al verificar los cambios en la configuración: {e}")
+
 def main():
     """Función principal del programa."""
-    global running
+    # global running, config, config_last_modified
 
-    config = load_config()
-    if not config:
-        print("Error al cargar la configuración.  Revisa el log para más detalles.")
-        return
+    # config = load_config(config_file) #Pasar el nombre del archivo a la función
+    # if not config:
+    #     print("Error al cargar la configuración.  Revisa el log para más detalles.")
+    #     return
+    
+    # git_utils.configure(config.get('github_user'), config.get('github_token'))
+    # genai_utils.configure(config.get('google_api_key'))
 
-    git_utils.configure(config.get('github_user'), config.get('github_token'))
-    genai_utils.configure(config.get('google_api_key'))
+    # try:
+    #     config_last_modified = os.path.getmtime(config_file)
+    # except FileNotFoundError:
+    #     logging.error(f"Archivo de configuración no encontrado: {config_file}")
+    #     config_last_modified = None
 
-    projects = config.get('projects', [])
+    # projects = config.get('projects', [])
 
-    for project_config in projects:
-        sync_project(project_config)
+    # for project_config in projects:
+    #     sync_project(project_config)
+    
+    check_config_changes()
+
+    schedule.every(1).minute.do(check_config_changes)
 
     while running:
         schedule.run_pending()
-        time.sleep(1) 
+        time.sleep(1)
 
 def signal_handler(sig, frame):
     """Maneja las señales de interrupción (Ctrl+C)."""
     global running
     print("Deteniendo el programa...")
     logging.info("Deteniendo el programa...")
-    running = False 
+    running = False
     sys.exit(0)
 
 
