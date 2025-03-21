@@ -96,7 +96,7 @@ def sync_project(config):
         except Exception as e:
             logging.error(f"Error durante el commit y push en {repo_name}: {e}")
 
-    schedule.every(interval).seconds.do(commit_and_push)
+    schedule.every(interval).minutes.do(commit_and_push)
 
 
 def load_config(config_file='config.json'):
