@@ -169,3 +169,39 @@ def get_remote_url(repo_name):
         return None
 
     return f"https://{_github_user}:{_github_token}@github.com/{_github_user}/{repo_name}.git"
+
+def commit_and_push(folder_path, repo_name):
+    """Realiza el commit y push."""
+    try:
+        if not git_add(cwd=folder_path):
+            logging.error(f"Error al ejecutar 'git add .' en {folder_path}")
+            return
+
+        diff = get_git_diff(cwd=folder_path)
+        if diff:
+            commit_message = generate_commit_message(diff)
+
+            if commit_message:
+                print(f"Mensaje de commit sugerido: {commit_message}")
+            else:
+                print("No se pudo generar un mensaje de commit.")
+                commit_message = "Auto commit"
+
+            if not git_utils.git_commit(folder_path, commit_message):
+                logging.error(f"Error al ejecutar 'git commit' en {folder_path}")
+                return
+
+            if not git_utils.git_pull(cwd=folder_path):
+                logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
+                return
+            logging.info(f"Cambios bajados del repositorio {repo_name}")
+
+            if not git_utils.git_push(cwd=folder_path):
+                logging.error(f"Error al ejecutar 'git push' en {folder_path}")
+                return
+            logging.info(f"Cambios subidos al repositorio {repo_name}")
+        else:
+            logging.info(f"No hay cambios para subir en {repo_name}")
+
+    except Exception as e:
+        logging.error(f"Error durante el commit y push en {repo_name}: {e}")
