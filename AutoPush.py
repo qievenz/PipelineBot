@@ -11,8 +11,13 @@ import git_utils
 import genai_utils
 
 # Configuración del logging
-logging.basicConfig(filename='log.txt', level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+log_format = "%(asctime)s - %(levelname)s - %(message)s"
+logging.basicConfig(filename='log.txt', level=logging.INFO, format=log_format)
+logger = logging.getLogger()
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter(log_format)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 running = True
 config_file = 'config.json'
@@ -73,11 +78,11 @@ def sync_project(config):
             if diff:
                 commit_message = genai_utils.generate_commit_message(diff)
 
-                if commit_message:
-                    logging.info(f"Mensaje de commit sugerido: {commit_message}")
-                else:
+                if not commit_message:
                     logging.warning("No se pudo generar un mensaje de commit.")
                     commit_message = "Auto commit"
+                    
+                logging.info(f"Commit message: {commit_message}")
 
                 if not git_utils.git_commit(folder_path, commit_message):
                     logging.error(f"Error al ejecutar 'git commit' en {folder_path}")

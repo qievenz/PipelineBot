@@ -37,12 +37,12 @@ def execute_command(command, cwd=None):
 def get_git_diff(cwd=None):
     """Obtiene la salida de 'git diff --staged'."""
     try:
-        result = subprocess.run(['git', 'diff', '--staged'], capture_output=True, text=True, check=True, cwd=cwd)
+        result = subprocess.run(['git', 'diff', '--staged'], capture_output=True, text=True, check=True, cwd=cwd, encoding='utf-8', errors='ignore')
         
         if result.stdout:
-            logging.info(f"Salida del comando:\n{result.stdout}")
+            logging.debug(f"Salida del comando:\n{result.stdout}")
         if result.stderr:
-            logging.error(f"Error del comando:\n{result.stderr}")
+            logging.debug(f"Error del comando:\n{result.stderr}")
             
         return result.stdout
     except subprocess.CalledProcessError as e:
