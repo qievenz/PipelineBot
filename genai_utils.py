@@ -23,7 +23,7 @@ def generate_commit_message(diff, model_name=MODEL_NAME):
     """
 
     if not diff:
-        print("No hay cambios preparados (staged). No se puede generar un mensaje de commit.")
+        logging.info("No hay cambios preparados (staged). No se puede generar un mensaje de commit.")
         return None
 
     model = genai.GenerativeModel(model_name)
@@ -34,6 +34,7 @@ def generate_commit_message(diff, model_name=MODEL_NAME):
     commit de no más de 50 caracteres que resuma los cambios realizados. Usa la
     convención de mensajes de commit de Angular (tipo(scope): descripcion).
     Si el scope no es obvio, omítelo. Ejemplos de tipos: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.
+    Si detectas errores de sintaxis, escribe "*SYNTAX_ERROR*" en lugar de un mensaje de commit.
 
     Diff:
     ```

@@ -81,6 +81,10 @@ def sync_project(config):
                 if not commit_message:
                     logging.warning("No se pudo generar un mensaje de commit.")
                     commit_message = "Auto commit"
+                
+                if "SYNTAX_ERROR" in commit_message:
+                    logging.error("Error de sintaxis detectado en el mensaje de commit.")
+                    return
                     
                 logging.info(f"Commit message: {commit_message}")
 
