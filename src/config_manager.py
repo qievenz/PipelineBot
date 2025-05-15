@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-from sync_manager import sync_project
+from sync_deploy_manager import sync_project
 
 config_last_modified = None 
 

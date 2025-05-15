@@ -1,13 +1,16 @@
 import argparse
+import os
 import time
 import logging
 import schedule
 import sys
 import signal
+src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, src_path)
 from config_manager import check_config_changes, load_config
+from sync_deploy_manager import cancel_jobs, sync_project
 import genai_utils
 import git_utils
-from sync_manager import cancel_jobs, sync_project
 
 # Configuración del logging
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
