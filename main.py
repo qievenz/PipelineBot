@@ -54,8 +54,7 @@ def main():
     args = parser.parse_args()
 
     check_config_and_schedule_jobs()
-
-    schedule.every(args.config_check_interval_minutes).minute.do(check_config_and_schedule_jobs)
+    schedule.every(args.config_check_interval_minutes).minutes.do(check_config_and_schedule_jobs)
 
     while running:
         schedule.run_pending()
