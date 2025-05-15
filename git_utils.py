@@ -2,17 +2,23 @@ import subprocess
 import logging
 
 _github_user = None
+_github_email = None
 _github_token = None
 
-def configure(user, token):
-    global _github_user, _github_token
-    if not user or not token:
+def configure(user, email, token):
+    global _github_user, _github_email, _github_token
+    if not user or not email or not token:
         logging.error("Falta la configuración de github_user o github_token en config.json")
         print("Falta la configuración de github_user o github_token en config.json.  Revisa el log para más detalles.")
         return False
     
     _github_user = user
+    _github_email = email
     _github_token = token
+    
+    execute_command(["git", "config", "user.email", _github_email], cwd=None)
+    execute_command(["git", "config", "user.name", _github_user], cwd=None)
+
     logging.info("Usuario y token de GitHub configurados.")
     return True
 
