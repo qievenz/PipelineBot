@@ -25,7 +25,7 @@ def sync_project(config):
     private = config.get('private', False)
     option = config.get('option', 'push')
     docker_compose_file = config.get('docker_compose_file', None)
-    project_name = config.get('project_name', None)
+    docker_compose_project_name = config.get('docker_compose_project_name', None)
 
     logging.info(f"Sincronizando proyecto: {repo_name} en {folder_path}")
 
@@ -111,7 +111,7 @@ def sync_project(config):
                 return
             logging.info(f"Cambios bajados del repositorio {repo_name}")
 
-            execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=project_name)
+            execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name)
         except Exception as e:
             logging.exception(f"Error durante el pull y despliegue en {repo_name}: {e}")
             

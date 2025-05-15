@@ -31,7 +31,7 @@ def generate_commit_message(diff, model_name=MODEL_NAME):
     prompt = f"""
     Eres un asistente experto en generar mensajes de commit concisos y descriptivos
     para proyectos de Git.  Analiza el siguiente diff y genera un mensaje de
-    commit de no más de 50 caracteres que resuma los cambios realizados. Usa la
+    commit de no más de 70 caracteres que resuma los cambios realizados. Usa la
     convención de mensajes de commit de Angular (tipo(scope): descripcion).
     Si el scope no es obvio, omítelo. Ejemplos de tipos: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.
     Si detectas errores de sintaxis, escribe "*SYNTAX_ERROR*" en lugar de un mensaje de commit.
