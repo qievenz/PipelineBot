@@ -1,17 +1,17 @@
 {
-    "github_user": "",
-    "github_email": "",
-    "github_token": "",
-    "google_api_key": "",
-    "projects": [
-      {
-        "folder_path": "/folder/path",
-        "repo_name": "repo_name",
-        "interval": 120,
-        "private": false,
-        "option": "push|pull|push_and_pull",
-        "docker_compose_file": "docker-compose.yml",
-        "docker_compose_project_name": "docker_compose_project_name"
-      }
-    ]
-  }
+  "github_user": "",
+  "github_email": "",
+  "github_token": "",
+  "google_api_key": "",
+  "projects": [
+    {
+      "folder_path": "/folder/path",
+      "repo_name": "repo_name",
+      "interval": 120,
+      "private": false,
+      "option": "push|pull|push_and_pull",
+      "docker_compose_file": "docker-compose.yml",
+      "docker_compose_project_name": "docker_compose_project_name"
+    }
+  ]
+}

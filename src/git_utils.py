@@ -181,3 +181,13 @@ def get_remote_url(repo_name):
         return None
 
     return f"https://{_github_user}:{_github_token}@github.com/{_github_user}/{repo_name}.git"
+
+def get_head_hash(cwd):
+    """Obtiene el hash del commit HEAD."""
+    try:
+        result = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=cwd, capture_output=True, text=True, check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error al obtener el hash del HEAD: {e}")
+        logging.error(f"Salida del error: {e.stderr}")
+        return None

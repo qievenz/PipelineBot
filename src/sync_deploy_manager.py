@@ -106,12 +106,20 @@ def sync_project(config):
     def pull_and_deploy():
         """Realiza el pull y despliega con Docker Compose si está habilitado."""
         try:
+            initial_head_hash =  git_utils.get_head_hash(cwd=folder_path)
             if not git_utils.git_pull(cwd=folder_path):
                 logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
                 return
             logging.info(f"Cambios bajados del repositorio {repo_name}")
-
-            execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name)
+            
+            final_head_hash = git_utils.get_head_hash(cwd=folder_path)
+            
+            if initial_head_hash == final_head_hash:
+                logging.info(f"No hay cambios para desplegar en {repo_name}")
+                return
+            else:
+                logging.info(f"Desplegando cambios en {repo_name}")
+                execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name)
         except Exception as e:
             logging.exception(f"Error durante el pull y despliegue en {repo_name}: {e}")
             
