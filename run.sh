@@ -1,4 +1,4 @@
-cd "~/PipelineBot"
+cd ~/PipelineBot
 if [ ! -f "env/bin/activate" ]; then
     python3 -m venv env
 fi
