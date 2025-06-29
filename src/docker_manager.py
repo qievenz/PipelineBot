@@ -47,11 +47,10 @@ def execute_docker_compose_with_file(docker_compose_file, project_name):
     logging.info(f"Ejecutando Docker Compose con archivo: {docker_compose_file}")
     try:
         logging.info(f"Usando archivo Docker Compose: {docker_compose_file}")
-        if (is_docker_compose_project_running(project_name)):
-            logging.info(f"Deteniendo servicios del proyecto '{project_name}' antes de reiniciar.")
-            subprocess.run(['docker compose', '-f', docker_compose_file, '-p', project_name, 'down'], check=True, capture_output=True)
-            logging.info(f"Comando 'docker compose down' ejecutado.")
-        result = subprocess.run(['docker compose', '-f', docker_compose_file, '-p', project_name, 'up', '-d', '--build'], check=True, capture_output=True, text=True)
+        logging.info(f"Deteniendo servicios del proyecto '{project_name}' antes de reiniciar.")
+        subprocess.run(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'down'], check=True, capture_output=True)
+        logging.info(f"Comando 'docker compose down' ejecutado.")
+        result = subprocess.run(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'up', '-d', '--build'], check=True, capture_output=True, text=True)
         logging.info(f"Docker Compose output:\n{result.stdout}")
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar Docker Compose: {e}")
@@ -63,9 +62,9 @@ def execute_docker_compose_with_folder(folder_path):
     """Ejecuta los comandos de Docker Compose en la carpeta especificada."""
     logging.info(f"Ejecutando Docker Compose en: {folder_path}")
     try:
-        subprocess.run(['docker compose', 'down'], cwd=folder_path, check=True, capture_output=True)
+        subprocess.run(['docker', 'compose', 'down'], cwd=folder_path, check=True, capture_output=True)
         logging.info(f"Comando 'docker compose down' ejecutado.")
-        result = subprocess.run(['docker compose', 'up', '-d', '--build'], cwd=folder_path, check=True, capture_output=True, text=True)
+        result = subprocess.run(['docker', 'compose', 'up', '-d', '--build'], cwd=folder_path, check=True, capture_output=True, text=True)
         logging.info(f"Comando 'docker compose up -d --build' ejecutado.")
         logging.info(f"Docker Compose output:\n{result.stdout}")
     except subprocess.CalledProcessError as e:
