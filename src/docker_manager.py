@@ -14,6 +14,7 @@ def is_docker_compose_project_running(project_name):
             text=True
         )
         output = result.stdout.strip()
+        logging.info(f"output: '{output}'.")
         if project_name in output and 'running' in output.lower():
             logging.info(f"Servicios en ejecución para el proyecto '{project_name}'.")
             return True
