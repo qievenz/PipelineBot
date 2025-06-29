@@ -50,7 +50,7 @@ def execute_docker_compose_with_file(docker_compose_file, project_name):
         logging.info(f"Deteniendo servicios del proyecto '{project_name}' antes de reiniciar.")
         subprocess.run(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'down'], check=True, capture_output=True)
         logging.info(f"Comando 'docker compose down' ejecutado.")
-        result = subprocess.run(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'up', '-d', 'build'], check=True, capture_output=True, text=True)
+        result = subprocess.run(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'up', '-d'], check=True, capture_output=True, text=True)
         logging.info(f"Docker Compose output:\n{result.stdout}")
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar Docker Compose: {e}")
