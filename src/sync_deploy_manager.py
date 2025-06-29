@@ -28,7 +28,14 @@ def sync_project(config):
     docker_compose_project_name = config.get('docker_compose_project_name', None)
 
     logging.info(f"Sincronizando proyecto: {repo_name} en {folder_path}")
-
+    
+    if not os.path.exists(folder_path):
+        logging.info(f"Creando carpeta {folder_path} para el repositorio {repo_name}")
+        try:
+            os.makedirs(folder_path)
+        except OSError as e:
+            logging.error(f"Error al crear la carpeta {folder_path}: {e}")
+            return
     if not os.path.exists(os.path.join(folder_path, ".git")):
         logging.info(f"Inicializando repositorio Git en {folder_path}")
         if not git_utils.execute_command(["git", "init"], cwd=folder_path):
