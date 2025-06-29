@@ -13,9 +13,9 @@ def is_docker_compose_project_running(project_name):
             capture_output=True,
             text=True
         )
-        running_containers = result.stdout.strip()
-        if running_containers:
-            logging.info(f"Servicios en ejecución para el proyecto '{project_name}':\n{running_containers}")
+        output = result.stdout.strip()
+        if project_name in output and 'running' in output.lower():
+            logging.info(f"Servicios en ejecución para el proyecto '{project_name}'.")
             return True
         else:
             logging.info(f"No hay servicios corriendo para el proyecto '{project_name}'.")
