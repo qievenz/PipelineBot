@@ -41,7 +41,7 @@ def check_config_and_schedule_jobs():
     if config_changed:
         logging.info("Se detectaron cambios en la configuración. Recargando...")
         
-        config = load_config()
+        config = load_config(config_file_path)
         if not config:
             logging.error("Error al recargar la configuración. Usando la configuración anterior.")
             return 
