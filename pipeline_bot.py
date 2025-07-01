@@ -10,13 +10,21 @@ from watchdog.events import FileSystemEventHandler
 
 src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'src'))
 sys.path.insert(0, src_path)
+
 from config_manager import check_config_changes, load_config
 from sync_deploy_manager import cancel_jobs, sync_project
 import genai_utils
 import git_utils
 
+parser = argparse.ArgumentParser(description="Automatiza el push y pull de repositorios Git y despliega con Docker.")
+parser.add_argument('--config', type=str, default='config.json',
+                    help='Ruta al archivo de configuración (ej. config/my_config.json). Por defecto es config.json en el directorio del script.')
+parser.add_argument('--log', type=str, default='log.txt',
+                    help='Ruta al archivo de log (ej. logs/app.log). Por defecto es log.txt en el directorio del script.')
+args = parser.parse_args()
+    
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
-logging.basicConfig(filename='log.txt', level=logging.INFO, format=log_format)
+logging.basicConfig(filename=args.log, level=logging.INFO, format=log_format)
 logger = logging.getLogger()
 console_handler = logging.StreamHandler()
 formatter = logging.Formatter(log_format)
@@ -24,7 +32,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 running = True
-config_file = 'config.json'
+config_file = args.config
 config_file_path = os.path.join(os.path.dirname(__file__), config_file)
 
 def check_config_and_schedule_jobs():
@@ -67,10 +75,6 @@ class ConfigChangeHandler(FileSystemEventHandler):
             check_config_and_schedule_jobs()
 
 def main():
-    parser = argparse.ArgumentParser(description="Automatiza el push y pull de repositorios Git y despliega con Docker.")
-    parser.add_argument('-c', '--some-other-interval-minutes', type=int, default=1, 
-                        help='Intervalo en minutos para otras tareas programadas (si aplica).')
-    args = parser.parse_args()
 
     check_config_and_schedule_jobs()
 
