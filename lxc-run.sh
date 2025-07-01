@@ -4,6 +4,6 @@ if [ ! -f "env/bin/activate" ]; then
 fi
 source env/bin/activate
 pip install -r requirements.txt
-python3 pipeline_bot.py --config '/pipeline/PipelineBot.config' --log '/pipeline/pipeline.log' > /dev/null 2>&1
+python3 pipeline_bot.py --config '/pipeline/PipelineBot.config.json' --log '/pipeline/pipeline.log' > /dev/null 2>&1
 # /PipelineBot/./lxc-run.sh &
 # @reboot /PipelineBot/lxc-run.sh
