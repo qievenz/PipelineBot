@@ -122,7 +122,8 @@ def sync_project(config):
             final_head_hash = git_utils.get_head_hash(cwd=folder_path)
             is_project_running = is_docker_compose_project_running(docker_compose_project_name)
             
-            if initial_head_hash != final_head_hash or not is_project_running:
+            if (initial_head_hash != final_head_hash and docker_compose_file) \
+                or (not is_project_running and docker_compose_file):
                 logging.info(f"Desplegando cambios en {repo_name}")
                 execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name)
             else:

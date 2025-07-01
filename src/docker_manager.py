@@ -7,6 +7,10 @@ def is_docker_compose_project_running(project_name):
     Retorna True si al menos un contenedor está activo, False si no.
     """
     try:
+        if not project_name:
+            logging.error("Error: El nombre del proyecto Docker Compose no esta configurado.")
+            return False
+        
         logging.info(f"Verificando si el proyecto '{project_name}' está corriendo...")
         result = subprocess.run(
             ['docker', 'compose', '-p', project_name, 'ps', '--status=running'],
