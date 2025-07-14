@@ -1,4 +1,5 @@
 import argparse
+from logging.handlers import TimedRotatingFileHandler
 import os
 import time
 import logging
@@ -19,15 +20,28 @@ import git_utils
 parser = argparse.ArgumentParser(description="Automatiza el push y pull de repositorios Git y despliega con Docker.")
 parser.add_argument('--config', type=str, default='config.json',
                     help='Ruta al archivo de configuración (ej. config/my_config.json). Por defecto es config.json en el directorio del script.')
-parser.add_argument('--log', type=str, default='log.txt',
-                    help='Ruta al archivo de log (ej. logs/app.log). Por defecto es log.txt en el directorio del script.')
+parser.add_argument('--logdir', type=str, default='logs',
+                    help='Ruta al archivo de log (ej. /app/logs). Por defecto es logs en el directorio del script.')
 args = parser.parse_args()
-    
-log_format = "%(asctime)s - %(levelname)s - %(message)s"
-logging.basicConfig(filename=args.log, level=logging.INFO, format=log_format)
-logger = logging.getLogger()
-console_handler = logging.StreamHandler()
+
+log_format = "%(asctime)s [%(levelname)s] %(message)s"
 formatter = logging.Formatter(log_format)
+os.makedirs(args.logdir, exist_ok=True)
+file_handler = TimedRotatingFileHandler(
+    filename=os.path.join(args.logdir, "pipeline.log"),
+    when="midnight",         # Rota cada medianoche
+    interval=1,              # Cada día
+    backupCount=7,           # Mantiene 7 días
+    encoding="utf-8",        # Evita problemas con caracteres
+    utc=False                # Usa hora local
+)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.INFO)
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(file_handler)
+console_handler = logging.StreamHandler()
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
