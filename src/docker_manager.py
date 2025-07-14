@@ -28,6 +28,8 @@ def is_docker_compose_project_running(project_name):
             return False
     except subprocess.CalledProcessError as e:
         logging.error(f"Error verificando el estado de los servicios Docker Compose: {e}")
+        logging.error(f"Salida estándar:\n{e.stdout}")
+        logging.error(f"Salida de error:\n{e.stderr}")
         return False
     except FileNotFoundError:
         logging.error("Error: 'docker compose' no se encontró en el sistema.")
@@ -60,6 +62,8 @@ def execute_docker_compose_with_file(docker_compose_file, project_name):
         logging.info(f"Docker Compose output:\n{result.stdout}")
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar Docker Compose: {e}")
+        logging.error(f"Salida estándar:\n{e.stdout}")
+        logging.error(f"Salida de error:\n{e.stderr}")
     except FileNotFoundError:
         logging.error("Error: 'docker compose' no se encontró en el sistema.")
 
@@ -74,6 +78,8 @@ def execute_docker_compose_with_folder(folder_path):
         logging.info(f"Docker Compose output:\n{result.stdout}")
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar Docker Compose en {folder_path}: {e}")
+        logging.error(f"Salida estándar:\n{e.stdout}")
+        logging.error(f"Salida de error:\n{e.stderr}")
     except FileNotFoundError:
         logging.error("Error: 'docker compose' no se encontró en el sistema.")
         
