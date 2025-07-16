@@ -53,11 +53,18 @@ def execute_docker_compose(folder_path=None, docker_compose_file=None, project_n
 def execute_docker_compose_with_file(docker_compose_file, project_name):
     """Ejecuta los comandos de Docker Compose en la carpeta especificada."""
     logging.info(f"Ejecutando Docker Compose con archivo: {docker_compose_file}")
-    try:
-        logging.info(f"Usando archivo Docker Compose: {docker_compose_file}")
+    try:# 
         logging.info(f"Deteniendo servicios del proyecto '{project_name}' antes de reiniciar.")
+        subprocess.run("docker stop $(docker ps -q) && docker rm $(docker ps -a -q)", shell=True, check=True, capture_output=True)
+
         subprocess.run(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'down'], check=True, capture_output=True)
-        logging.info(f"Comando 'docker compose down' ejecutado. Ejecutando build y up.")
+        logging.info(f"Comando 'docker compose down' ejecutado. Ejecutando build sin caché.")
+
+        # ⛔ Build sin caché
+        subprocess.run(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'build', '--no-cache'], check=True, capture_output=True)
+        logging.info(f"Build sin caché completado. Ejecutando docker compose up.")
+
+        # 🚀 Levantar servicios
         result = subprocess.run(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'up', '-d'], check=True, capture_output=True, text=True)
         logging.info(f"Docker Compose output:\n{result.stdout}")
     except subprocess.CalledProcessError as e:
