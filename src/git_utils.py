@@ -1,5 +1,6 @@
 import subprocess
 import logging
+from command_manager import execute_command
 
 _github_user = None
 _github_email = None
@@ -21,24 +22,6 @@ def configure(user, email, token):
 
     logging.info("Usuario y token de GitHub configurados.")
     return True
-
-def execute_command(command, cwd=None):
-    """Ejecuta un comando del sistema."""
-    try:
-        result = subprocess.run(command, capture_output=True, text=True, check=True, cwd=cwd)
-        logging.info(f"Comando ejecutado: {' '.join(command)}")
-        if result.stdout:
-            logging.info(f"Salida del comando:\n{result.stdout}")
-        if result.stderr:
-            logging.error(f"Error del comando:\n{result.stderr}")
-        return result.returncode == 0
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error al ejecutar el comando: {e}")
-        logging.error(f"Salida del error: {e.stderr}")
-        return False
-    except FileNotFoundError as e:
-        logging.error(f"Error: Git no encontrado. Asegúrate de que Git esté instalado y en el PATH.")
-        return False
 
 def get_git_diff(cwd=None):
     """Obtiene la salida de 'git diff --staged'."""
