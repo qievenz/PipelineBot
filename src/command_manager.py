@@ -14,9 +14,9 @@ def execute_command(command, shell=False, cwd=None):
                                 shell=shell, 
                                 text=True)
         if result.stdout:
-            logging.info(f"Salida del comando {' '.join(command)}: {result.stdout}")
+            logging.info(f"Salida del comando RC:{result.returncode} {' '.join(command)}: {result.stdout}")
         if result.stderr:
-            logging.error(f"Error del comando {' '.join(command)}: {result.stderr}")
+            logging.error(f"Error del comando RC:{result.returncode} {' '.join(command)}: {result.stderr}")
         return result.returncode == 0
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar el comando {' '.join(command)}: {e}")
