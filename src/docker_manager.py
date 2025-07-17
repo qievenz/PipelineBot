@@ -54,7 +54,7 @@ def execute_docker_compose_with_file(docker_compose_file, project_name):
     """Ejecuta los comandos de Docker Compose en la carpeta especificada."""
     logging.info(f"Ejecutando Docker Compose {project_name} con archivo: {docker_compose_file}")
     try:
-        execute_command("docker stop $(docker ps -q) && docker rm $(docker ps -a -q)")
+        execute_command("docker stop $(docker ps -q) && docker rm $(docker ps -a -q)", shell=True)
         execute_command(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'down'])
         execute_command(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'build', '--no-cache'])
         execute_command(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'up', '-d'])
