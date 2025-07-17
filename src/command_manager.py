@@ -5,7 +5,7 @@ def execute_command(command, cwd=None):
     """Ejecuta un comando del sistema."""
     try:
         logging.info(f"Ejecutando comando: {' '.join(command)}")
-        result = subprocess.run(command, capture_output=True, text=True, check=True, cwd=cwd)
+        result = subprocess.run(command, capture_output=True, check=True, cwd=cwd)
         if result.stdout:
             logging.info(f"Salida del comando {' '.join(command)}: {result.stdout}")
         if result.stderr:
