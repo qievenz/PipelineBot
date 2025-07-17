@@ -47,7 +47,6 @@ def execute_docker_compose(folder_path=None, docker_compose_file=None, project_n
         else:
             logging.error("Error: Debe proporcionar una carpeta o un archivo Docker Compose y un nombre de proyecto.")
             return
-        logging.info("Docker Compose ejecutado correctamente.")
     except Exception as e:
         logging.exception(f"Error al ejecutar Docker Compose: {e}")
 
