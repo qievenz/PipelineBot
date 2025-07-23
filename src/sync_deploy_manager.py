@@ -26,6 +26,7 @@ def sync_project(config):
     option = config.get('option', 'push')
     docker_compose_file = config.get('docker_compose_file', None)
     docker_compose_project_name = config.get('docker_compose_project_name', None)
+    env_file = config.get('env_file', None)
 
     logging.info(f"Sincronizando proyecto: {repo_name} en {folder_path}")
     
@@ -125,7 +126,7 @@ def sync_project(config):
             if (initial_head_hash != final_head_hash and docker_compose_file) \
                 or (not is_project_running and docker_compose_file):
                 logging.info(f"Desplegando cambios en {repo_name}")
-                execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name)
+                execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name, env_file=env_file)
             else:
                 logging.info(f"No hay cambios para desplegar en {repo_name}")
                 return
