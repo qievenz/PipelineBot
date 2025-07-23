@@ -6,7 +6,9 @@ def execute_command(command, shell=False, cwd=None):
     try:
         if isinstance(command, str):
             command = command.split()
-        logging.info(f"Ejecutando comando: {' '.join(command)}")
+        cmd_str = ' '.join(command)
+        logging.info(f"Ejecutando comando: {cmd_str}")
+        logging.info("-" * 40)  # Línea separadora
         
         process = subprocess.Popen(
             command,
@@ -25,18 +27,21 @@ def execute_command(command, shell=False, cwd=None):
             stderr_line = process.stderr.readline()
             
             if stdout_line:
-                logging.info(f"[{' '.join(command)}] {stdout_line.strip()}")
+                logging.info(f"  {stdout_line.strip()}")
             if stderr_line:
-                logging.info(f"[{' '.join(command)}] {stderr_line.strip()}")
-                
+                logging.info(f"  {stderr_line.strip()}")
+
             # Verificar si el proceso ha terminado
             if process.poll() is not None:
                 # Leer las últimas líneas si quedan
                 for line in process.stdout:
-                    logging.info(f"[{' '.join(command)}] {line.strip()}")
+                    logging.info(f"  {line.strip()}")
                 for line in process.stderr:
-                    logging.info(f"[{' '.join(command)}] {line.strip()}")
+                    logging.info(f"  {line.strip()}")
                 break
+                
+        logging.info("-" * 40)  # Línea separadora
+        logging.info(f"Comando {cmd_str} finalizado con código: {process.returncode}")
                 
         return process.returncode == 0
     except subprocess.CalledProcessError as e:
