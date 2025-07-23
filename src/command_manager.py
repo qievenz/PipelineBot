@@ -13,11 +13,19 @@ def execute_command(command, shell=False, cwd=None):
                                 cwd=cwd, 
                                 shell=shell, 
                                 text=True)
-        if result.stdout:
-            logging.info(f"Salida del comando RC:{result.returncode} {' '.join(command)}: {result.stdout}")
-        if result.stderr:
-            logging.error(f"Error del comando RC:{result.returncode} {' '.join(command)}: {result.stderr}")
-        return result.returncode == 0
+        
+        if result.returncode == 0:
+            if result.stdout:
+                logging.info(f"Salida stdout RC:{result.returncode} {' '.join(command)}: {result.stdout}")
+            if result.stderr:
+                logging.info(f"Salida stderr RC:{result.returncode} {' '.join(command)}: {result.stderr}")
+            return True
+        else:
+            if result.stdout:
+                logging.error(f"Salida stdout RC:{result.returncode} {' '.join(command)}: {result.stdout}")
+            if result.stderr:
+                logging.error(f"Salida stderr RC:{result.returncode} {' '.join(command)}: {result.stderr}")
+            return False
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar el comando {' '.join(command)}: {e}")
         logging.error(f"Salida del error {' '.join(command)}: {e.stderr}")
