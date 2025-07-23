@@ -44,13 +44,9 @@ def get_git_diff(cwd=None):
 def git_pull(cwd):
     """Realiza git pull."""
     try:
-        result = subprocess.run(['git', 'pull', 'origin', 'main'], capture_output=True, text=True, check=True, cwd=cwd)
-        logging.info(f"Comando ejecutado: git pull origin main")
-        if result.stdout:
-            logging.info(f"Salida del comando:\n{result.stdout}")
-        if result.stderr:
-            logging.error(f"Error del comando:\n{result.stderr}")
-        return result.returncode == 0
+        result = execute_command(['git', 'pull', 'origin', 'main'], cwd=cwd)
+            
+        return result
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar git pull: {e}")
         logging.error(f"Salida del error: {e.stderr}")
