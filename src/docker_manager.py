@@ -60,7 +60,7 @@ def execute_docker_compose_with_file(docker_compose_file, project_name, env_file
             execute_command(['docker', 'compose', '--env-file', env_file, '-f', docker_compose_file, '-p', project_name, 'up', '-d'])
         else:
             execute_command(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'down'])
-            execute_command(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'build', '--no-cache'])
+            execute_command(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'build', '--no-cache', '--progress', 'plain'])
             execute_command(['docker', 'compose', '-f', docker_compose_file, '-p', project_name, 'up', '-d'])
     except FileNotFoundError:
         logging.error("Error: 'docker compose' no se encontró en el sistema.")
