@@ -13,6 +13,9 @@ def configure(user, email, token):
         print("Falta la configuración de github_user o github_token en config.json.  Revisa el log para más detalles.")
         return False
     
+    if _github_token and _github_token != token:
+        execute_command(['git', 'remote', 'remove', 'origin'])
+    
     _github_user = user
     _github_email = email
     _github_token = token
