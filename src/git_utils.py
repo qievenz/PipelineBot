@@ -196,13 +196,22 @@ def get_remote_url(repo_name, github_token_api=None, owner=None, gitea_url=None)
         return None
 
     if gitea_url:
-        # For Gitea, only use the token if explicitly provided at project level (github_token_api)
-        # Do not fall back to global token if not needed for public repo.
+        # Ensure gitea_url has a protocol
+        gitea_base_url = gitea_url
+        if not gitea_base_url.startswith('http://') and not gitea_base_url.startswith('https://'):
+            gitea_base_url = f"http://{gitea_base_url}" # Default to http for Gitea as per user
+
         if github_token_api:
-            # Gitea typically uses username:password/token format
-            return f"https://{actual_owner}:{github_token_api}@{gitea_url}/{actual_owner}/{repo_name}.git"
+            # Insert credentials after the protocol
+            parts = gitea_base_url.split('://', 1)
+            if len(parts) > 1:
+                protocol = parts[0]
+                remaining_url = parts[1]
+                return f"{protocol}://{actual_owner}:{github_token_api}@{remaining_url}/{actual_owner}/{repo_name}.git"
+            else: # Should not happen if a protocol was added, but as a fallback
+                return f"http://{actual_owner}:{github_token_api}@{gitea_base_url}/{actual_owner}/{repo_name}.git"
         else:
-            return f"https://{gitea_url}/{actual_owner}/{repo_name}.git"
+            return f"{gitea_base_url}/{actual_owner}/{repo_name}.git"
     else: # Default to GitHub
         # Determine the token to use for GitHub authentication
         token_to_use = github_token_api if github_token_api else _git_config_token
