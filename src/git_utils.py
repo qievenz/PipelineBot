@@ -195,19 +195,21 @@ def get_remote_url(repo_name, github_token_api=None, owner=None, gitea_url=None)
         logging.error("No se pudo determinar el propietario del repositorio. Faltan el usuario global y el del proyecto.")
         return None
 
-    # Determine the token to use for authentication
-    token_to_use = github_token_api if github_token_api else _git_config_token
-
     if gitea_url:
-        if token_to_use:
-            return f"https://{actual_owner}:{token_to_use}@{gitea_url}/{actual_owner}/{repo_name}.git"
+        # For Gitea, only use the token if explicitly provided at project level (github_token_api)
+        # Do not fall back to global token if not needed for public repo.
+        if github_token_api:
+            # Gitea typically uses username:password/token format
+            return f"https://{actual_owner}:{github_token_api}@{gitea_url}/{actual_owner}/{repo_name}.git"
         else:
-            # Fallback for Gitea if token is not provided (e.g., public repo or SSH)
             return f"https://{gitea_url}/{actual_owner}/{repo_name}.git"
     else: # Default to GitHub
+        # Determine the token to use for GitHub authentication
+        token_to_use = github_token_api if github_token_api else _git_config_token
+
         if token_to_use:
             return f"https://x-access-token:{token_to_use}@github.com/{actual_owner}/{repo_name}.git"
-        elif _git_config_user: # Fallback to global user if no specific token is provided (rely on credential helper or SSH)
+        elif _git_config_user: # Fallback for GitHub if no specific token is provided (rely on credential helper or SSH)
             return f"https://github.com/{actual_owner}/{repo_name}.git"
         else:
             logging.error("No se pudo construir la URL remota para GitHub. Faltan credenciales o usuario propietario.")
