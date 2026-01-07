@@ -17,7 +17,7 @@ def cancel_jobs():
     logging.info("Todas las tareas programadas han sido canceladas.")
     
 def sync_project(config):
-    """Sincroniza una carpeta con un repositorio en GitHub."""
+    """Sincroniza una carpeta con un repositorio en GitHub o Gitea."""
     global jobs
     folder_path = config['folder_path']
     repo_name = config['repo_name']
@@ -27,6 +27,18 @@ def sync_project(config):
     docker_compose_file = config.get('docker_compose_file', None)
     docker_compose_project_name = config.get('docker_compose_project_name', None)
     env_file = config.get('env_file', None)
+    
+    github_token_api = config.get('github_token_api', None)
+    github_email = config.get('github_email', None)
+    github_user = config.get('github_user', None)
+    gitea_url = config.get('gitea_url', None)
+    git_branch = config.get('git_branch', 'main') # Default to 'main'
+
+    logging.debug(f"Config for {repo_name}:")
+    logging.debug(f"  github_token_api: {'*' * len(github_token_api) if github_token_api else 'None'}") # Mask token
+    logging.debug(f"  github_email: {github_email}")
+    logging.debug(f"  github_user: {github_user}")
+    logging.debug(f"  gitea_url: {gitea_url}")
 
     logging.info(f"Sincronizando proyecto: {repo_name} en {folder_path}")
     
@@ -46,20 +58,34 @@ def sync_project(config):
         if not git_utils.execute_command(["git", "config", "pull.rebase", "true"], cwd=folder_path):
             logging.error(f"Error al configurar pull.rebase en {folder_path}")
             return
+        
+        # Configure the initial branch if the repository is new
+        if not git_utils.execute_command(["git", "branch", f"-M", git_branch], cwd=folder_path):
+            logging.error(f"Error al configurar la rama inicial a {git_branch} en {folder_path}")
+            return
 
-    remote_url = git_utils.get_remote_url(repo_name)
+
+    remote_url = git_utils.get_remote_url(repo_name, github_token_api, github_user, gitea_url)
 
     if not remote_url:
         logging.error("No se pudo obtener la URL remota.")
         return
 
+    # This part needs to be adapted for Gitea if a dedicated API is used.
+    # For now, it assumes the repo exists or creation is handled by git_utils (which currently only supports GitHub API)
     try:
         subprocess.check_output(['git', 'ls-remote', remote_url], cwd=folder_path)
     except subprocess.CalledProcessError:  # Repository does not exist
         logging.info(f"El repositorio remoto {remote_url} no existe. Creando...")
-        if not git_utils.create_github_repo(repo_name, private):
+        # This will need to be made generic for Gitea as well, or detect if it's GitHub
+        if not gitea_url and not git_utils.create_github_repo(repo_name, private, github_token_api):
             logging.error(f"Error al crear el repositorio en GitHub para {repo_name}")
             return
+        elif gitea_url:
+            logging.warning("Creación automática de repositorios en Gitea no implementada. Asegúrate de que el repositorio exista.")
+            # Assume it exists for now, or log an error if it doesn't and can't be created.
+            pass
+
 
     # Agregar el remoto si no existe
     try:
@@ -96,12 +122,12 @@ def sync_project(config):
                     logging.error(f"Error al ejecutar 'git commit' en {folder_path}")
                     return
 
-                if not git_utils.git_pull(cwd=folder_path):
+                if not git_utils.git_pull(cwd=folder_path, repo_name=repo_name, github_token_api=github_token_api, project_email=github_email, project_user=github_user, branch_name=git_branch, gitea_url=gitea_url):
                     logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
                     return
                 logging.info(f"Cambios bajados del repositorio {repo_name}")
 
-                if not git_utils.git_push(cwd=folder_path):
+                if not git_utils.git_push(cwd=folder_path, repo_name=repo_name, github_token_api=github_token_api, project_email=github_email, project_user=github_user, branch_name=git_branch, gitea_url=gitea_url):
                     logging.error(f"Error al ejecutar 'git push' en {folder_path}")
                     return
                 logging.info(f"Cambios subidos al repositorio {repo_name}")
@@ -111,28 +137,28 @@ def sync_project(config):
         except Exception as e:
             logging.error(f"Error durante el commit y push en {repo_name}: {e}")
             
-    def pull_and_deploy():
-        """Realiza el pull y despliega con Docker Compose si está habilitado."""
-        try:
-            initial_head_hash =  git_utils.get_head_hash(cwd=folder_path)
-            if not git_utils.git_pull(cwd=folder_path):
-                logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
-                return
-            logging.info(f"Cambios bajados del repositorio {repo_name}")
-            
-            final_head_hash = git_utils.get_head_hash(cwd=folder_path)
-            is_project_running = is_docker_compose_project_running(docker_compose_project_name)
-            
-            if (initial_head_hash != final_head_hash and docker_compose_file) \
-                or (not is_project_running and docker_compose_file):
-                logging.info(f"Desplegando cambios en {repo_name}")
-                execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name, env_file=env_file)
-            else:
-                logging.info(f"No hay cambios para desplegar en {repo_name}")
-                return
-        except Exception as e:
-            logging.exception(f"Error durante el pull y despliegue en {repo_name}: {e}")
-            
+def pull_and_deploy():
+    """Realiza el pull y despliega con Docker Compose si está habilitado."""
+    try:
+        initial_head_hash =  git_utils.get_head_hash(cwd=folder_path)
+        if not git_utils.git_pull(cwd=folder_path, repo_name=repo_name, github_token_api=github_token_api, project_email=github_email, project_user=github_user, branch_name=git_branch, gitea_url=gitea_url):
+            logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
+            return
+        logging.info(f"Cambios bajados del repositorio {repo_name}")
+        
+        final_head_hash = git_utils.get_head_hash(cwd=folder_path)
+        is_project_running = is_docker_compose_project_running(docker_compose_project_name)
+        
+        if (initial_head_hash != final_head_hash and docker_compose_file) \
+            or (not is_project_running and docker_compose_file):
+            logging.info(f"Desplegando cambios en {repo_name}")
+            execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name, env_file=env_file)
+        else:
+            logging.info(f"No hay cambios para desplegar en {repo_name}")
+            return
+    except Exception as e:
+        logging.exception(f"Error durante el pull y despliegue en {repo_name}: {e}")
+        
     if option == 'push':
         job = schedule.every(interval).minutes.do(commit_and_push)
         jobs.append(job)
