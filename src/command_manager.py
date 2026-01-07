@@ -1,5 +1,13 @@
 import logging
 import subprocess
+import threading
+
+def log_stream(stream, log_level):
+    """Lee un stream línea por línea y lo loguea."""
+    for line in iter(stream.readline, ''):
+        if line:
+            logging.log(log_level, f"  {line.strip()}")
+    stream.close()
 
 def execute_command(command, shell=False, cwd=None):
     """Ejecuta un comando del sistema y muestra la salida en tiempo real."""
@@ -21,29 +29,24 @@ def execute_command(command, shell=False, cwd=None):
             universal_newlines=True
         )
         
-        # Leer stdout y stderr en tiempo real
-        while True:
-            stdout_line = process.stdout.readline()
-            stderr_line = process.stderr.readline()
-            
-            if stdout_line:
-                logging.info(f"  {stdout_line.strip()}")
-            if stderr_line:
-                logging.info(f"  {stderr_line.strip()}")
+        # Crear hilos para leer stdout y stderr simultáneamente
+        stdout_thread = threading.Thread(target=log_stream, args=(process.stdout, logging.INFO))
+        stderr_thread = threading.Thread(target=log_stream, args=(process.stderr, logging.ERROR)) # O logging.INFO si prefieres no marcar todo stderr como error
 
-            # Verificar si el proceso ha terminado
-            if process.poll() is not None:
-                # Leer las últimas líneas si quedan
-                for line in process.stdout:
-                    logging.info(f"  {line.strip()}")
-                for line in process.stderr:
-                    logging.info(f"  {line.strip()}")
-                break
+        stdout_thread.start()
+        stderr_thread.start()
+
+        # Esperar a que el proceso termine
+        return_code = process.wait()
+
+        # Esperar a que los hilos terminen de leer la salida
+        stdout_thread.join()
+        stderr_thread.join()
                 
         logging.info("-" * 40)  # Línea separadora
-        logging.info(f"Comando {cmd_str} finalizado con código: {process.returncode}")
+        logging.info(f"Comando {cmd_str} finalizado con código: {return_code}")
                 
-        return process.returncode == 0
+        return return_code == 0
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar el comando {' '.join(command)}: {e}")
         logging.error(f"Salida del error {' '.join(command)}: {e.stderr}")
