@@ -137,28 +137,28 @@ def sync_project(config):
         except Exception as e:
             logging.error(f"Error durante el commit y push en {repo_name}: {e}")
             
-def pull_and_deploy():
-    """Realiza el pull y despliega con Docker Compose si está habilitado."""
-    try:
-        initial_head_hash =  git_utils.get_head_hash(cwd=folder_path)
-        if not git_utils.git_pull(cwd=folder_path, repo_name=repo_name, github_token_api=github_token_api, project_email=github_email, project_user=github_user, branch_name=git_branch, gitea_url=gitea_url):
-            logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
-            return
-        logging.info(f"Cambios bajados del repositorio {repo_name}")
-        
-        final_head_hash = git_utils.get_head_hash(cwd=folder_path)
-        is_project_running = is_docker_compose_project_running(docker_compose_project_name)
-        
-        if (initial_head_hash != final_head_hash and docker_compose_file) \
-            or (not is_project_running and docker_compose_file):
-            logging.info(f"Desplegando cambios en {repo_name}")
-            execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name, env_file=env_file)
-        else:
-            logging.info(f"No hay cambios para desplegar en {repo_name}")
-            return
-    except Exception as e:
-        logging.exception(f"Error durante el pull y despliegue en {repo_name}: {e}")
-        
+    def pull_and_deploy():
+        """Realiza el pull y despliega con Docker Compose si está habilitado."""
+        try:
+            initial_head_hash =  git_utils.get_head_hash(cwd=folder_path)
+            if not git_utils.git_pull(cwd=folder_path, repo_name=repo_name, github_token_api=github_token_api, project_email=github_email, project_user=github_user, branch_name=git_branch, gitea_url=gitea_url):
+                logging.error(f"Error al ejecutar 'git pull' en {folder_path}")
+                return
+            logging.info(f"Cambios bajados del repositorio {repo_name}")
+            
+            final_head_hash = git_utils.get_head_hash(cwd=folder_path)
+            is_project_running = is_docker_compose_project_running(docker_compose_project_name)
+            
+            if (initial_head_hash != final_head_hash and docker_compose_file) \
+                or (not is_project_running and docker_compose_file):
+                logging.info(f"Desplegando cambios en {repo_name}")
+                execute_docker_compose(folder_path=folder_path, docker_compose_file=docker_compose_file, project_name=docker_compose_project_name, env_file=env_file)
+            else:
+                logging.info(f"No hay cambios para desplegar en {repo_name}")
+                return
+        except Exception as e:
+            logging.exception(f"Error durante el pull y despliegue en {repo_name}: {e}")
+            
     if option == 'push':
         job = schedule.every(interval).minutes.do(commit_and_push)
         jobs.append(job)
