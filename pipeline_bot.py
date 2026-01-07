@@ -99,9 +99,17 @@ def main():
     logging.info(f"Watchdog iniciado para monitorear {config_file_path}.")
 
     try:
+        heartbeat_counter = 0
+        logging.info(f"Iniciando bucle principal. Tareas programadas: {len(schedule.get_jobs())}")
         while running:
             schedule.run_pending()
             time.sleep(1)
+            
+            # Log de latido cada 60 segundos para confirmar que el loop está activo
+            heartbeat_counter += 1
+            if heartbeat_counter >= 60:
+                logging.debug(f"Bucle activo. Tareas programadas: {len(schedule.get_jobs())}")
+                heartbeat_counter = 0
     except KeyboardInterrupt:
         pass
     finally:

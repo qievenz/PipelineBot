@@ -136,15 +136,26 @@ def sync_project(config):
     if option == 'push':
         job = schedule.every(interval).minutes.do(commit_and_push)
         jobs.append(job)
+        logging.info(f"Tarea 'push' programada para {repo_name} cada {interval} minutos. Próxima ejecución: {job.next_run}")
+        # Ejecutar inmediatamente la primera vez
+        commit_and_push()
     elif option == 'pull':
         job = schedule.every(interval).minutes.do(pull_and_deploy)
         jobs.append(job)
+        logging.info(f"Tarea 'pull' programada para {repo_name} cada {interval} minutos. Próxima ejecución: {job.next_run}")
+        # Ejecutar inmediatamente la primera vez
+        pull_and_deploy()
     elif option == 'push_and_pull':
         job = schedule.every(interval).minutes.do(commit_and_push)
         job2 = schedule.every(interval).minutes.do(pull_and_deploy)
         jobs.append(job)
         jobs.append(job2)
+        logging.info(f"Tareas 'push' y 'pull' programadas para {repo_name} cada {interval} minutos. Próxima ejecución push: {job.next_run}, pull: {job2.next_run}")
+        # Ejecutar inmediatamente la primera vez
+        commit_and_push()
+        pull_and_deploy()
     else:
         logging.error(f"Opción no válida: {option}. Debe ser 'push', 'pull' o 'push_and_pull'.")
+        return
 
-    logging.info(f"Tarea programada para {repo_name} cada {interval} minutos.")
+    logging.info(f"Configuración completada para {repo_name}. Total de tareas programadas: {len(jobs)}")
